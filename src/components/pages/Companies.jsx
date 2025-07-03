@@ -32,9 +32,9 @@ const Companies = () => {
     }
   };
 
-  const filteredCompanies = companies.filter(company => {
-    const matchesSearch = company.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         company.industry.toLowerCase().includes(searchQuery.toLowerCase());
+const filteredCompanies = companies.filter(company => {
+    const matchesSearch = company.Name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         company.industry?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesIndustry = !industryFilter || company.industry === industryFilter;
     return matchesSearch && matchesIndustry;
   });

@@ -33,22 +33,32 @@ const JobSearch = () => {
       let filteredJobs = [...data];
       
       // Apply filters
-      if (filters.location) {
+if (filters.location) {
         filteredJobs = filteredJobs.filter(job => 
-          job.location.toLowerCase().includes(filters.location.toLowerCase())
+          job.location?.toLowerCase().includes(filters.location.toLowerCase())
         );
       }
       
       if (filters.minSalary) {
-        filteredJobs = filteredJobs.filter(job => 
-          job.salaryRange.min >= parseInt(filters.minSalary)
-        );
+        filteredJobs = filteredJobs.filter(job => {
+          if (job.salary_range && typeof job.salary_range === 'string') {
+            const salaryParts = job.salary_range.split('-');
+            const minSalary = parseInt(salaryParts[0]?.replace(/[^0-9]/g, ''));
+            return minSalary >= parseInt(filters.minSalary);
+          }
+          return job.salaryRange?.min >= parseInt(filters.minSalary);
+        });
       }
       
       if (filters.maxSalary) {
-        filteredJobs = filteredJobs.filter(job => 
-          job.salaryRange.max <= parseInt(filters.maxSalary)
-        );
+        filteredJobs = filteredJobs.filter(job => {
+          if (job.salary_range && typeof job.salary_range === 'string') {
+            const salaryParts = job.salary_range.split('-');
+            const maxSalary = parseInt(salaryParts[1]?.replace(/[^0-9]/g, ''));
+            return maxSalary <= parseInt(filters.maxSalary);
+          }
+          return job.salaryRange?.max <= parseInt(filters.maxSalary);
+        });
       }
       
       if (filters.jobTypes && filters.jobTypes.length > 0) {
@@ -58,18 +68,26 @@ const JobSearch = () => {
       }
       
       // Apply sorting
-      switch (sortBy) {
+switch (sortBy) {
         case 'recent':
-          filteredJobs.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
+          filteredJobs.sort((a, b) => new Date(b.posted_date || b.postedDate) - new Date(a.posted_date || a.postedDate));
           break;
         case 'salary-high':
-          filteredJobs.sort((a, b) => b.salaryRange.max - a.salaryRange.max);
+          filteredJobs.sort((a, b) => {
+            const aMax = a.salaryRange?.max || parseInt(a.salary_range?.split('-')[1]?.replace(/[^0-9]/g, '')) || 0;
+            const bMax = b.salaryRange?.max || parseInt(b.salary_range?.split('-')[1]?.replace(/[^0-9]/g, '')) || 0;
+            return bMax - aMax;
+          });
           break;
         case 'salary-low':
-          filteredJobs.sort((a, b) => a.salaryRange.min - b.salaryRange.min);
+          filteredJobs.sort((a, b) => {
+            const aMin = a.salaryRange?.min || parseInt(a.salary_range?.split('-')[0]?.replace(/[^0-9]/g, '')) || 0;
+            const bMin = b.salaryRange?.min || parseInt(b.salary_range?.split('-')[0]?.replace(/[^0-9]/g, '')) || 0;
+            return aMin - bMin;
+          });
           break;
         case 'title':
-          filteredJobs.sort((a, b) => a.title.localeCompare(b.title));
+          filteredJobs.sort((a, b) => (a.title || a.Name || '').localeCompare(b.title || b.Name || ''));
           break;
         default:
           break;
@@ -93,13 +111,13 @@ const JobSearch = () => {
 
   const handleApply = async (job) => {
     try {
-      const applicationData = {
-        jobId: job.Id,
-        candidateId: 1, // Mock candidate ID
+const applicationData = {
+        job_id: job.Id,
+        candidate_id: 1, // Mock candidate ID
         status: 'submitted',
-        appliedDate: new Date().toISOString(),
-        coverLetter: '',
-        resumeVersion: 'current_resume.pdf'
+        applied_date: new Date().toISOString(),
+        cover_letter: '',
+        resume_version: 'current_resume.pdf'
       };
       
       await applicationService.create(applicationData);

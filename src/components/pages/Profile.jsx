@@ -42,51 +42,57 @@ const [newSkill, setNewSkill] = useState('');
     loadProfile();
   }, []);
 
-  const loadProfile = async () => {
+const loadProfile = async () => {
     try {
-      // Mock loading existing profile
-      const mockProfile = {
-        name: 'John Doe',
-        email: 'john.doe@email.com',
-        phone: '+1 (555) 123-4567',
-        resume: 'john_doe_resume.pdf',
-        skills: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL'],
-        experience: [
-          {
-            title: 'Senior Frontend Developer',
-            company: 'Tech Solutions Inc.',
-            duration: '2021 - Present',
-            description: 'Lead frontend development for multiple client projects using React and modern web technologies.'
-          },
-          {
-            title: 'Frontend Developer',
-            company: 'Digital Agency',
-            duration: '2019 - 2021',
-            description: 'Developed responsive web applications and collaborated with design teams.'
-          }
-        ],
-        education: [
-          {
-            degree: 'Bachelor of Science',
-            school: 'University of Technology',
-            year: '2019',
-            field: 'Computer Science'
-          }
-        ],
-        preferredLocation: 'San Francisco, CA',
-        expectedSalary: '120000'
-      };
-      setProfile(mockProfile);
+      // Load user profile from candidate service
+      const candidateData = await candidateService.getById(1); // Mock candidate ID
+      if (candidateData) {
+        setProfile({
+          name: candidateData.Name || '',
+          email: candidateData.email || '',
+          phone: candidateData.phone || '',
+          resume: candidateData.resume || '',
+          skills: Array.isArray(candidateData.skills) ? candidateData.skills : 
+                 typeof candidateData.skills === 'string' ? candidateData.skills.split(',') : [],
+          experience: Array.isArray(candidateData.experience) ? candidateData.experience : [],
+          education: Array.isArray(candidateData.education) ? candidateData.education : [],
+          preferredLocation: candidateData.preferred_location || '',
+          expectedSalary: candidateData.expected_salary?.toString() || ''
+        });
+      }
     } catch (err) {
       console.error('Error loading profile:', err);
+      // Set default profile if loading fails
+      setProfile({
+        name: '',
+        email: '',
+        phone: '',
+        resume: '',
+        skills: [],
+        experience: [],
+        education: [],
+        preferredLocation: '',
+        expectedSalary: ''
+      });
     }
   };
 
-  const handleSave = async () => {
+const handleSave = async () => {
     try {
       setLoading(true);
-      // Mock save operation
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const candidateData = {
+        Name: profile.name,
+        email: profile.email,
+        phone: profile.phone,
+        resume: profile.resume,
+        skills: Array.isArray(profile.skills) ? profile.skills.join(',') : profile.skills,
+        experience: JSON.stringify(profile.experience),
+        education: JSON.stringify(profile.education),
+        preferred_location: profile.preferredLocation,
+        expected_salary: parseFloat(profile.expectedSalary) || 0
+      };
+      
+      await candidateService.update(1, candidateData); // Mock candidate ID
       toast.success('Profile updated successfully!');
     } catch (err) {
       toast.error('Failed to update profile. Please try again.');

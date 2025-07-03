@@ -43,13 +43,13 @@ const JobDetails = () => {
   const handleApply = async () => {
     try {
       setApplying(true);
-      const applicationData = {
-        jobId: job.Id,
-        candidateId: 1, // Mock candidate ID
+const applicationData = {
+        job_id: job.Id,
+        candidate_id: 1, // Mock candidate ID
         status: 'submitted',
-        appliedDate: new Date().toISOString(),
-        coverLetter: coverLetter,
-        resumeVersion: 'current_resume.pdf'
+        applied_date: new Date().toISOString(),
+        cover_letter: coverLetter,
+        resume_version: 'current_resume.pdf'
       };
       
       await applicationService.create(applicationData);
@@ -91,10 +91,10 @@ const JobDetails = () => {
         <div className="card p-8">
           <div className="flex flex-col md:flex-row justify-between items-start mb-6">
             <div className="flex items-start space-x-6">
-              <Avatar
+<Avatar
                 src={job.company?.logo}
-                alt={job.company?.name}
-                fallback={job.company?.name?.charAt(0)}
+                alt={job.company?.Name || job.company?.name}
+                fallback={job.company?.Name?.charAt(0) || job.company?.name?.charAt(0) || 'C'}
                 size="xl"
               />
               <div>
@@ -102,25 +102,25 @@ const JobDetails = () => {
                   {job.title}
                 </h1>
                 <div className="flex items-center space-x-4 text-gray-600 mb-4">
-                  <span className="text-xl font-semibold text-primary-600">
-                    {job.company?.name}
+<span className="text-xl font-semibold text-primary-600">
+                    {job.company?.Name || job.company?.name}
                   </span>
                   <div className="flex items-center">
                     <ApperIcon name="MapPin" size={18} className="mr-1" />
                     {job.location}
                   </div>
                   <div className="flex items-center">
-                    <ApperIcon name="Clock" size={18} className="mr-1" />
-                    {formatDistanceToNow(new Date(job.postedDate), { addSuffix: true })}
+<ApperIcon name="Clock" size={18} className="mr-1" />
+                    {formatDistanceToNow(new Date(job.posted_date || job.postedDate), { addSuffix: true })}
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
                   <Badge variant="primary" size="medium">
                     {job.type}
                   </Badge>
-                  <div className="flex items-center text-lg font-semibold text-accent-600">
+<div className="flex items-center text-lg font-semibold text-accent-600">
                     <ApperIcon name="DollarSign" size={20} className="mr-1" />
-                    ${job.salaryRange?.min?.toLocaleString()} - ${job.salaryRange?.max?.toLocaleString()}
+                    {job.salary_range || `$${job.salaryRange?.min?.toLocaleString()} - $${job.salaryRange?.max?.toLocaleString()}`}
                   </div>
                 </div>
               </div>
@@ -152,7 +152,7 @@ const JobDetails = () => {
         </div>
 
         {/* Requirements */}
-        {job.requirements && job.requirements.length > 0 && (
+{job.requirements && Array.isArray(job.requirements) && job.requirements.length > 0 && (
           <div className="card p-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
               Requirements
@@ -175,15 +175,15 @@ const JobDetails = () => {
               About {job.company.name}
             </h2>
             <div className="flex items-start space-x-6 mb-6">
-              <Avatar
+<Avatar
                 src={job.company.logo}
-                alt={job.company.name}
-                fallback={job.company.name.charAt(0)}
+                alt={job.company.Name || job.company.name}
+                fallback={job.company.Name?.charAt(0) || job.company.name?.charAt(0) || 'C'}
                 size="large"
               />
               <div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  {job.company.name}
+<h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  {job.company.Name || job.company.name}
                 </h3>
                 <div className="flex items-center space-x-4 text-gray-600 mb-4">
                   <div className="flex items-center">
@@ -204,7 +204,7 @@ const JobDetails = () => {
               </p>
             )}
             
-            {job.company.benefits && job.company.benefits.length > 0 && (
+{job.company.benefits && Array.isArray(job.company.benefits) && job.company.benefits.length > 0 && (
               <div>
                 <h4 className="font-semibold text-gray-900 mb-3">Benefits</h4>
                 <div className="flex flex-wrap gap-2">

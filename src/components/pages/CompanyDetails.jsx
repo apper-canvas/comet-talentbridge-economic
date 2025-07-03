@@ -32,13 +32,18 @@ const CompanyDetails = () => {
       setError('');
       
       const [companyData, allJobs] = await Promise.all([
-        companyService.getById(parseInt(id)),
+companyService.getById(parseInt(id)),
         jobService.getAll()
       ]);
       
       setCompany(companyData);
-      // Filter jobs for this company
-      const companyJobs = allJobs.filter(job => job.company.Id === companyData.Id);
+      // Filter jobs for this company - handle database field structure
+      const companyJobs = allJobs.filter(job => {
+        if (job.company && typeof job.company === 'object') {
+          return job.company.Id === companyData.Id;
+        }
+        return job.company === companyData.Id;
+      });
       setJobs(companyJobs);
     } catch (err) {
       setError('Company not found or failed to load.');
@@ -50,15 +55,14 @@ const CompanyDetails = () => {
 
   const handleApply = async (job) => {
     try {
-      const applicationData = {
-        jobId: job.Id,
-        candidateId: 1, // Mock candidate ID
+const applicationData = {
+        job_id: job.Id,
+        candidate_id: 1, // Mock candidate ID
         status: 'submitted',
-        appliedDate: new Date().toISOString(),
-        coverLetter: '',
-        resumeVersion: 'current_resume.pdf'
+        applied_date: new Date().toISOString(),
+        cover_letter: '',
+        resume_version: 'current_resume.pdf'
       };
-      
       await applicationService.create(applicationData);
       toast.success(`Applied to ${job.title} successfully!`);
     } catch (err) {
@@ -93,17 +97,17 @@ const CompanyDetails = () => {
         {/* Company Header */}
         <div className="card p-8">
           <div className="flex flex-col md:flex-row items-start space-y-6 md:space-y-0 md:space-x-8">
-            <Avatar
+<Avatar
               src={company.logo}
-              alt={company.name}
-              fallback={company.name.charAt(0)}
+              alt={company.Name}
+              fallback={company.Name?.charAt(0) || 'C'}
               size="xl"
               className="w-32 h-32 text-4xl"
             />
             
             <div className="flex-1">
-              <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                {company.name}
+<h1 className="text-4xl font-bold text-gray-900 mb-4">
+                {company.Name}
               </h1>
               
               <div className="flex flex-wrap items-center gap-4 mb-6">
@@ -140,7 +144,7 @@ const CompanyDetails = () => {
         )}
 
         {/* Benefits */}
-        {company.benefits && company.benefits.length > 0 && (
+{company.benefits && Array.isArray(company.benefits) && company.benefits.length > 0 && (
           <div className="card p-8">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">
               Benefits & Perks
